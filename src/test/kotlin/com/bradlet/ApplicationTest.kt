@@ -1,30 +1,48 @@
 package com.bradlet
 
-import io.ktor.routing.*
-import io.ktor.http.*
-import io.ktor.auth.*
-import io.ktor.util.*
-import io.ktor.features.*
-import org.slf4j.event.*
-import io.ktor.gson.*
-import io.ktor.http.cio.websocket.*
-import io.ktor.websocket.*
-import java.time.*
 import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.request.*
+import io.ktor.features.*
+import io.ktor.http.*
 import kotlin.test.*
 import io.ktor.server.testing.*
-import com.bradlet.plugins.*
 
 class ApplicationTest {
+
     @Test
-    fun testRoot() {
-        withTestApplication({ configureRouting() }) {
+    fun `Redirects standard http traffic to https`() {
+        withTestApplication(Application::mainApp) {
             handleRequest(HttpMethod.Get, "/").apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals("Hello World!", response.content)
+                assertEquals(HttpStatusCode.MovedPermanently, response.status())
             }
         }
+    }
+
+    @Test
+    fun `Server runs and responds okay to https traffic`() {
+        withHttpsTestApplication(Application::mainApp) {
+            assertEquals(HttpStatusCode.OK, response.status())
+            assertEquals("Hello World!", response.content)
+        }
+    }
+}
+
+/**
+ * Helpful wrapper which handles test https redirection setup to cleanup
+ * tests. The HttpsRedirect plugin would otherwise cause a 301 response on all
+ * tests.
+ */
+private fun withHttpsTestApplication(
+    moduleFunction: Application.() -> Unit,
+    httpMethod: HttpMethod = HttpMethod.Get,
+    uri: String = "/",
+    assertions: TestApplicationCall.() -> Unit
+) {
+    withTestApplication({
+        install(XForwardedHeaderSupport)
+        moduleFunction()
+    }) {
+        handleRequest(httpMethod, uri, setup = {
+            addHeader(HttpHeaders.XForwardedProto, "https")
+        }).apply { assertions() }
     }
 }

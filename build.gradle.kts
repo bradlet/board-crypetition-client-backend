@@ -10,6 +10,7 @@ val junitVersion: String by project
 plugins {
     application
     kotlin("jvm") version "1.6.0"
+    id("org.web3j") version "4.8.8"
 }
 
 group = "com.bradlet"

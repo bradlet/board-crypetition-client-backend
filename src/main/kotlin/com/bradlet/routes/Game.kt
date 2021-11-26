@@ -6,7 +6,7 @@ import io.ktor.websocket.*
 
 fun Route.game() {
     // websocket session for the main game's streaming communication
-    webSocket("/") {
+    webSocket("/game") {
         for (frame in incoming) {
             when (frame) {
                 is Frame.Text -> {
@@ -21,6 +21,7 @@ fun Route.game() {
                         )
                     }
                 }
+                else -> {}
             }
         }
     }

@@ -18,7 +18,7 @@ fun Application.mainApp() {
     configureHTTP()
     configureMonitoring()
     configureSockets()
-    // Setup GSON json serialiazation / deserialization
+    // Setup GSON json serialization / deserialization
     install(ContentNegotiation) { gson { } }
 
     /**

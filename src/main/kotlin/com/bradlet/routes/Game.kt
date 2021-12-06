@@ -1,12 +1,13 @@
 package com.bradlet.routes
 
+import com.bradlet.clients.EthereumClient
 import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*
 import io.ktor.websocket.*
 
-fun Route.game() {
+fun Route.game(client: EthereumClient) {
     // websocket session for the main game's streaming communication
-    webSocket("/game") {
+    webSocket("/game/{gameId}") {
         for (frame in incoming) {
             when (frame) {
                 is Frame.Text -> {

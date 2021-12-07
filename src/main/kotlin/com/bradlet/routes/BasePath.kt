@@ -9,7 +9,6 @@ import io.ktor.response.*
 fun Route.basePath(client: EthereumClient) {
     get("/") {
         val lobbies = client.getAllGameLobbies()
-        println(lobbies)
         call.respondText(Gson().toJson(lobbies))
     }
 }

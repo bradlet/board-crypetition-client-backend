@@ -15,11 +15,11 @@ class EthereumClient(
     private val contract: MyContract
 ) {
 
-    fun initializeGame(creator: Address): String {
+    suspend fun initializeGame(creator: Address): String {
         return contract.createGame(creator)
     }
 
-    fun addPlayerToGame(newPlayer: Address, gameId: String): GameState {
+    suspend fun addPlayerToGame(newPlayer: Address, gameId: String): GameState {
         val stateOfProvidedGame = contract.checkGameState(gameId)
         if (stateOfProvidedGame != GameState.INITIALIZED)
             return stateOfProvidedGame
@@ -28,7 +28,7 @@ class EthereumClient(
         return contract.checkGameState(gameId)
     }
 
-    fun completeGame(winner: Address, gameId: String) {
+    suspend fun completeGame(winner: Address, gameId: String) {
         val stateOfProvidedGame = contract.checkGameState(gameId)
         if (stateOfProvidedGame != GameState.READY)
             throw IllegalStateException(
@@ -37,6 +37,8 @@ class EthereumClient(
 
         contract.finalizeGame(winner, gameId)
     }
+
+    suspend fun findGameLobby(gameId: String) = GameLobby.of(contract.findGameLobby(gameId))
 
     fun getAllGameLobbies(): List<GameLobby> {
         return contract

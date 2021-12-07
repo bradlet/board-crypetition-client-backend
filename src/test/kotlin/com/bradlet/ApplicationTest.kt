@@ -10,6 +10,7 @@ import io.ktor.http.cio.websocket.*
 import io.ktor.request.*
 import io.ktor.server.testing.*
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -29,6 +30,7 @@ class ApplicationTest {
         // using relaxed mocking to get around EthHttpClient setup, but still want the returns
         // from my temp mocking extension functions
         every { clientMock.getAllGameLobbies() } answers { callOriginal() }
+        coEvery { clientMock.findGameLobby(any()) } coAnswers { callOriginal() }
     }
 
     @AfterEach
@@ -68,6 +70,11 @@ class ApplicationTest {
             moduleFunction = { mainApp(clientMock) },
             uri = "/game/game1"
         ) { incoming, outgoing ->
+            // Test greeting
+            val greeting = (incoming.receive() as Frame.Text).readText()
+            assert(greeting.contains("Joined lobby: ${TEMPORARY_GAME_LOBBY.gameId}"))
+
+            // Test simple conversation
             outgoing.send(Frame.Text("test"))
             val response = (incoming.receive() as Frame.Text).readText()
             assertEquals(response, "YOU SAID: test")

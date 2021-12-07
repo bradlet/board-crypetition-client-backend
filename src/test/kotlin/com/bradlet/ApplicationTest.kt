@@ -1,11 +1,13 @@
 package com.bradlet
 
+import com.bradlet.clients.TEMPORARY_EXAMPLE_LOBBY_LIST
 import com.bradlet.models.GameLobby
 import com.google.gson.Gson
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.http.cio.websocket.*
+import io.ktor.request.*
 import io.ktor.server.testing.*
 import io.mockk.clearAllMocks
 import io.mockk.mockk
@@ -29,7 +31,7 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Redirects standard http traffic to https`() {
+    fun `redirects standard http traffic to https`() {
         withTestApplication(Application::mainApp) {
             handleRequest(HttpMethod.Get, "/").apply {
                 assertEquals(HttpStatusCode.MovedPermanently, response.status())
@@ -38,11 +40,12 @@ class ApplicationTest {
     }
 
     @Test
-    fun `Server runs and responds okay to https traffic`() {
+    fun `responds with OK and array of GameLobby objects`() {
         withHttpsTestApplication(Application::mainApp) {
             assertEquals(HttpStatusCode.OK, response.status())
             val lobbies = Gson().fromJson(response.content, Array<GameLobby>::class.java)
             assertNotEquals(arrayOf<GameLobby>(), lobbies)
+            assertEquals(TEMPORARY_EXAMPLE_LOBBY_LIST, lobbies.map{ it.gameId })
         }
     }
 

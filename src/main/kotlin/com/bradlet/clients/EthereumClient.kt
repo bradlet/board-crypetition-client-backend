@@ -1,8 +1,10 @@
 package com.bradlet.clients
 
+import com.bradlet.models.GameLobby
 import com.bradlet.models.GameState
 import org.web3j.abi.datatypes.Address
 import org.web3j.mycontract.MyContract
+import java.math.BigInteger
 import java.util.*
 
 class EthereumClient(
@@ -53,13 +55,31 @@ private fun MyContract.startGame(
     // 3. start game and echo game Id for verification
 }
 
+// Return from contract would be returns(string, uint6, string, string) for gameId, gameState, player1, player2
+private fun MyContract.findGameLobby(gameId: String): GameLobby {
+    // I'd want a dynamic array of structs, which would essentially match the GameLobby object described in this
+    // service.
+    // Would want an array of INITIALIZED games for users to join.
+
+    // Adding this example of reading from a view function that would return a tuple of all the info in a
+    // game lobby struct. GameLobby.of() shows the conversion of the web3j Tuple4 type, to local GameLobby object.
+//    return GameLobby.of(quadruple.send())
+    return GameLobby(players = Address(BigInteger.ZERO) to Address(BigInteger.ZERO), gameId = "1", 2)
+}
+
 private fun MyContract.checkGameState(gameId: String): GameState {
     // Used to check if the game has been completed in the blockchain and payouts
     // should be sent.
     // 1. Call smart contract view function to read stateCode from gameId -> stateCode
     //  mapping.
-
     return GameState.NOT_INITIALIZED
+}
+
+val TEMPORARY_EXAMPLE_LOBBY_LIST = listOf("1", "2", "3", "4")
+private fun MyContract.getOpenLobbies(): List<String> {
+    // Will implement something like a LinkedList that will sit overtop of Solidity arrays in the contract.
+    // Just need some mechanism for conveying gameIds that can be joined by new users. Custom list may be overkill.
+    return TEMPORARY_EXAMPLE_LOBBY_LIST
 }
 
 // Returns:

@@ -42,7 +42,7 @@ fun Application.mainApp() {
      * Setup API routes
      */
     routing {
-        basePath()
+        basePath(ethClient)
         game(ethClient)
     }
 }

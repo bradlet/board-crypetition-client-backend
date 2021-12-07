@@ -11,9 +11,17 @@ contract MyContract {
         return address(this).balance;
     }
 
+    function getQuadruple() external pure returns(string memory, uint8, address, address) {
+        address player1 = address(0x3585C484fd0e9748Acfe3f10d493847Ad64A8D5b);
+        address player2 = address(0x3585C484fd0e9748Acfe3f10d493847Ad64A8D5b);
+        return ("test", 1, player1, player2);
+    }
+
     function cashOut() external {
         selfdestruct(payable(owner));
     }
+
+    receive() external payable {}
 
     fallback() external payable {}
 }

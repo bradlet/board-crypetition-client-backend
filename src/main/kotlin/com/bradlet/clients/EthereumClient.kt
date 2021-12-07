@@ -1,10 +1,11 @@
 package com.bradlet.clients
 
+import com.bradlet.TEMPORARY_EXAMPLE_LOBBY_LIST
+import com.bradlet.TEMPORARY_GAME_LOBBY
 import com.bradlet.models.GameLobby
 import com.bradlet.models.GameState
 import org.web3j.abi.datatypes.Address
 import org.web3j.mycontract.MyContract
-import java.math.BigInteger
 import java.util.*
 
 class EthereumClient(
@@ -32,6 +33,12 @@ class EthereumClient(
             )
 
         contract.finalizeGame(winner, gameId)
+    }
+
+    fun getAllGameLobbies(): List<GameLobby> {
+        return contract
+            .getOpenLobbies()
+            .map(contract::findGameLobby)
     }
 }
 
@@ -64,7 +71,7 @@ private fun MyContract.findGameLobby(gameId: String): GameLobby {
     // Adding this example of reading from a view function that would return a tuple of all the info in a
     // game lobby struct. GameLobby.of() shows the conversion of the web3j Tuple4 type, to local GameLobby object.
 //    return GameLobby.of(quadruple.send())
-    return GameLobby(players = Address(BigInteger.ZERO) to Address(BigInteger.ZERO), gameId = "1", 2)
+    return TEMPORARY_GAME_LOBBY
 }
 
 private fun MyContract.checkGameState(gameId: String): GameState {
@@ -75,7 +82,6 @@ private fun MyContract.checkGameState(gameId: String): GameState {
     return GameState.NOT_INITIALIZED
 }
 
-val TEMPORARY_EXAMPLE_LOBBY_LIST = listOf("1", "2", "3", "4")
 private fun MyContract.getOpenLobbies(): List<String> {
     // Will implement something like a LinkedList that will sit overtop of Solidity arrays in the contract.
     // Just need some mechanism for conveying gameIds that can be joined by new users. Custom list may be overkill.

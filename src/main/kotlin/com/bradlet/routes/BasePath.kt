@@ -1,12 +1,15 @@
 package com.bradlet.routes
 
 import com.bradlet.clients.EthereumClient
+import com.google.gson.Gson
 import io.ktor.routing.*
 import io.ktor.application.*
 import io.ktor.response.*
 
 fun Route.basePath(client: EthereumClient) {
     get("/") {
-        call.respondText("Hello World!")
+        val lobbies = client.getAllGameLobbies()
+        println(lobbies)
+        call.respondText(Gson().toJson(lobbies))
     }
 }

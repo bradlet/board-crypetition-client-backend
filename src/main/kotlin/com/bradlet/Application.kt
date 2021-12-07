@@ -17,8 +17,34 @@ import org.web3j.protocol.Web3j
 import org.web3j.protocol.http.HttpService
 import org.web3j.tx.gas.DefaultGasProvider
 
+// Main entry point into our application
+fun main() {
+    val ethHttpClient = HttpService(OkHttpClient())
+    val ethClient = EthereumClient(
+        contract = MyContract.load(
+            "",
+            Web3j.build(ethHttpClient),
+            Credentials.create("0x01"),
+            DefaultGasProvider()
+        )
+    )
+
+    val mainApp = applicationEngineEnvironment {
+        module {
+            mainApp(ethClient)
+        }
+
+        connector {
+            host = "0.0.0.0"
+            port = 8080
+        }
+    }
+
+    embeddedServer(Netty, mainApp).start(wait = true)
+}
+
 // Configure plugins and API routing
-fun Application.mainApp() {
+fun Application.mainApp(ethClient: EthereumClient) {
     /**
      * Configure web server plugins
      */
@@ -28,16 +54,6 @@ fun Application.mainApp() {
     // Setup GSON json serialization / deserialization
     install(ContentNegotiation) { gson { } }
 
-    val ethHttpClient = HttpService(OkHttpClient())
-    val ethClient = EthereumClient(
-        contract = MyContract.load(
-            "",
-            Web3j.build(ethHttpClient),
-            Credentials.create("private key here"),
-            DefaultGasProvider()
-        )
-    )
-
     /**
      * Setup API routes
      */
@@ -45,10 +61,4 @@ fun Application.mainApp() {
         basePath(ethClient)
         game(ethClient)
     }
-}
-
-// Main entry point into our application
-fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::mainApp)
-        .start(wait = true)
 }

@@ -1,6 +1,6 @@
 package com.bradlet
 
-import com.bradlet.clients.TEMPORARY_EXAMPLE_LOBBY_LIST
+import com.bradlet.clients.EthereumClient
 import com.bradlet.models.GameLobby
 import com.google.gson.Gson
 import io.ktor.application.*
@@ -10,19 +10,26 @@ import io.ktor.http.cio.websocket.*
 import io.ktor.request.*
 import io.ktor.server.testing.*
 import io.mockk.clearAllMocks
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.web3j.tx.Contract
-
 
 class ApplicationTest {
 
-    val contractMock: Contract = mockk()
+    private val clientMock = mockk<EthereumClient>(relaxed = true)
+
+    @BeforeEach
+    fun setupTests() {
+        // using relaxed mocking to get around EthHttpClient setup, but still want the returns
+        // from my temp mocking extension functions
+        every { clientMock.getAllGameLobbies() } answers { callOriginal() }
+    }
 
     @AfterEach
     fun cleanupTests() {
@@ -32,7 +39,9 @@ class ApplicationTest {
 
     @Test
     fun `redirects standard http traffic to https`() {
-        withTestApplication(Application::mainApp) {
+        withTestApplication({
+            mainApp(clientMock)
+        }) {
             handleRequest(HttpMethod.Get, "/").apply {
                 assertEquals(HttpStatusCode.MovedPermanently, response.status())
             }
@@ -41,19 +50,23 @@ class ApplicationTest {
 
     @Test
     fun `responds with OK and array of GameLobby objects`() {
-        withHttpsTestApplication(Application::mainApp) {
+        withHttpsTestApplication({
+            mainApp(clientMock)
+        }) {
             assertEquals(HttpStatusCode.OK, response.status())
             val lobbies = Gson().fromJson(response.content, Array<GameLobby>::class.java)
             assertNotEquals(arrayOf<GameLobby>(), lobbies)
-            assertEquals(TEMPORARY_EXAMPLE_LOBBY_LIST, lobbies.map{ it.gameId })
+            // Since the mock function getAllGameLobbies currently returns the same GameLobby object,
+            // this has the same gameId everytime... this test doesn't provide value, just setting up the structure.
+            assertEquals(lobbies.map { "1" }, lobbies.map { it.gameId })
         }
     }
 
     @Test
     fun `Server handles basic WebSocket conversation`() {
         withHttpsWebSocketConversation(
-            moduleFunction = Application::mainApp,
-            uri = "/game"
+            moduleFunction = { mainApp(clientMock) },
+            uri = "/game/game1"
         ) { incoming, outgoing ->
             outgoing.send(Frame.Text("test"))
             val response = (incoming.receive() as Frame.Text).readText()

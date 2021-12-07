@@ -1,5 +1,7 @@
 package com.bradlet
 
+import com.bradlet.models.GameLobby
+import com.google.gson.Gson
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
@@ -11,6 +13,7 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import org.web3j.tx.Contract
 
@@ -38,7 +41,8 @@ class ApplicationTest {
     fun `Server runs and responds okay to https traffic`() {
         withHttpsTestApplication(Application::mainApp) {
             assertEquals(HttpStatusCode.OK, response.status())
-            assertEquals("Hello World!", response.content)
+            val lobbies = Gson().fromJson(response.content, Array<GameLobby>::class.java)
+            assertNotEquals(arrayOf<GameLobby>(), lobbies)
         }
     }
 

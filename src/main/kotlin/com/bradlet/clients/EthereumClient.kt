@@ -38,12 +38,12 @@ class EthereumClient(
         contract.finalizeGame(winner, gameId)
     }
 
-    suspend fun findGameLobby(gameId: BigInteger) = GameLobby.of(contract.findGameLobby(gameId).send())
-
     suspend fun getRecentOpenLobbies(): List<BigInteger> {
         // getRecentOpenLobbies return type: uint128[] memory
         return contract.recentOpenLobbies.send().map { it as BigInteger }
     }
+
+    suspend fun findGameLobby(gameId: BigInteger) = GameLobby.of(contract.findGameLobby(gameId).send())
 
     private suspend fun getGameState(gameId: BigInteger): GameState {
         val gameStateCode = contract.lookupGameState(gameId).send().toInt()

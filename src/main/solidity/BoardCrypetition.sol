@@ -68,6 +68,7 @@ contract BoardCrypetition {
         require(lobby.gameState == INITIALIZED, "game with provided ID cannot be joined.");
         require(msg.value == lobby.wager, "must match the lobby's wager when joining a game.");
 
+        currentGameMap[msg.sender] = _gameId;
         lobby.player2 = payable(msg.sender);
         lobby.gameState = uint8(GameState.READY);
         emit GameReady(_gameId);

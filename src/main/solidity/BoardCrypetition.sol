@@ -45,10 +45,13 @@ contract BoardCrypetition {
 
     // Returns an unpacked representation
     function findGameLobby(uint256 _gameId) external view returns(uint256, uint256, address, address, uint8) {
-        uint256 lobbyIndex = gameIdIndexMap[_gameId];
-        require(lobbyIndex != 0, "No lobby exists with provided game ID");
-        Lobby memory lobby = lobbies[lobbyIndex];
+        Lobby memory lobby = lobbies[lookupGameIndex(_gameId)];
         return (lobby.gameId, lobby.winnersPot, lobby.player1, lobby.player2, lobby.gameState);
+    }
+
+    // Redundant with findGameLobby, but just a bit cleaner to interact with.
+    function lookupGameState(uint256 _gameId) external view returns(uint8) {
+        return lobbies[lookupGameIndex(_gameId)].gameState;
     }
 
     // Leaving the option to get rid of the contract if I want to change things and redeploy a better version later.
@@ -59,6 +62,15 @@ contract BoardCrypetition {
     // If people wanna send the contract money for free, hey, I ain't complaining!
     receive() external payable {}
     fallback() external payable {}
+
+    // --- private helper functions here ---
+
+    // Basically tags require exists check on top of gameIdIndexMap reads
+    function lookupGameIndex(uint256 _gameId) private view returns(uint256) {
+        uint256 lobbyIndex = gameIdIndexMap[_gameId];
+        require(lobbyIndex != 0, "No lobby exists with provided game ID");
+        return lobbyIndex ;
+    }
 
     // --- All modifiers below this point ---
 

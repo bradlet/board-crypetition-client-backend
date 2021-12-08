@@ -1,5 +1,8 @@
 pragma solidity >=0.8.0 <= 0.8.10;
 
+// @title Board Crypetition
+// @author bradlet - Bradley Thompson
+// @notice This essentially an escrow smart contract designed for efficient 'transaction' lookup. Focused on games.
 contract BoardCrypetition {
     address owner;
     address server;

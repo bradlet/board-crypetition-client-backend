@@ -45,3 +45,6 @@ private fun BoardCrypetition.finalizeGame(winningPlayer: Address, gameId: BigInt
     return true
 }
 
+// 16 digit hex string gives a uint128
+fun String.toUint128(): BigInteger = BigInteger(this, 16)
+

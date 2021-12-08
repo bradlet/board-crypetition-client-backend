@@ -29,7 +29,7 @@ class ApplicationTest {
     fun setupTests() {
         // using relaxed mocking to get around EthHttpClient setup, but still want the returns
         // from my temp mocking extension functions
-        every { clientMock.getRecentOpenLobbies() } answers { callOriginal() }
+        coEvery { clientMock.getRecentOpenLobbies() } answers { callOriginal() }
         coEvery { clientMock.findGameLobby(any()) } coAnswers { callOriginal() }
     }
 

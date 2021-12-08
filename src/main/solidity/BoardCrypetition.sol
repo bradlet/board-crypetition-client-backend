@@ -4,6 +4,10 @@ pragma solidity >=0.8.0 <= 0.8.10;
 // @author bradlet - Bradley Thompson
 // @notice This essentially an escrow smart contract designed for efficient 'transaction' lookup. Focused on games.
 contract BoardCrypetition {
+    // constants
+    uint256 private constant recentLobbiesToShow = 100;
+
+    // contract storage variables
     address owner;
     address server;
     uint256 public totalCollectedFees;
@@ -31,16 +35,29 @@ contract BoardCrypetition {
         lobbies.push(); // 0th element is going to be empty, using 0 index to denote absence elsewhere.
     }
 
-    function getNextGameIndex() external view returns(uint256) {
-        return lobbies.length;
-    }
-
     function setFee(uint8 _fee) external onlyOwner hasPercentInput(_fee) {
         feePercent = _fee;
     }
 
     function setServerAddress(address _server) external onlyOwner {
         server = _server;
+    }
+
+    // Returns all lobbies that are in an INITIALIZED state (code: 1), these are games awaiting a second player.
+    // Capping amount to show for simplicity -- games can become hard to discover if they are old, as a result.
+    function getRecentOpenLobbies() external view returns(uint256[recentLobbiesToShow] memory) {
+        uint256[recentLobbiesToShow] memory openLobbies;
+        uint256 currentOpenLobbyCount = 0;
+        // Loop (most recent first) through all lobbies, or until 'recentLobbiesToShow' open lobbies have been found.
+        for (uint256 i = lobbies.length-1; i >= 0 && currentOpenLobbyCount < recentLobbiesToShow; i--) {
+            Lobby memory lobby = lobbies[i];
+            // if game state == INITIALIZED add this lobby's gameId to openLobbies
+            if (lobby.gameState == 1) {
+                openLobbies[currentOpenLobbyCount] = lobby.gameId;
+                currentOpenLobbyCount += 1;
+            }
+        }
+        return openLobbies;
     }
 
     // Returns an unpacked representation
@@ -64,6 +81,10 @@ contract BoardCrypetition {
     fallback() external payable {}
 
     // --- private helper functions here ---
+
+    function getNextGameIndex() private view returns(uint256) {
+        return lobbies.length;
+    }
 
     // Basically tags require exists check on top of gameIdIndexMap reads
     function lookupGameIndex(uint256 _gameId) private view returns(uint256) {

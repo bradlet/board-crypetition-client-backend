@@ -1,13 +1,13 @@
 package com.bradlet.clients
 
+import com.bradlet.SolLobbyTuple
 import com.bradlet.TEMPORARY_EXAMPLE_LOBBY_LIST
-import com.bradlet.TEMPORARY_GAME_LOBBY
 import com.bradlet.TEMPORARY_GAME_LOBBY_SOL
 import com.bradlet.models.GameLobby
 import com.bradlet.models.GameState
 import org.web3j.abi.datatypes.Address
 import org.web3j.mycontract.MyContract
-import org.web3j.tuples.generated.Tuple4
+import org.web3j.tuples.generated.Tuple5
 import java.math.BigInteger
 import java.util.*
 
@@ -69,7 +69,7 @@ private fun MyContract.startGame(
 }
 
 // Return from contract would be returns(string, uint6, string, string) for gameId, gameState, player1, player2
-private fun MyContract.findGameLobby(gameId: String): Tuple4<String, BigInteger, String, String> {
+private fun MyContract.findGameLobby(gameId: String): SolLobbyTuple {
     // I'd want a dynamic array of structs, which would essentially match the GameLobby object described in this
     // service.
     // Would want an array of INITIALIZED games for users to join.

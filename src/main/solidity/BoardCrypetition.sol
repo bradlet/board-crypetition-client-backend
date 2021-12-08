@@ -8,7 +8,7 @@ contract BoardCrypetition {
 
     Lobby[] lobbies;
     mapping(address => uint256) currentGameMap; // An address can only be in one game at a time. 0 means no game active
-    mapping(uint256 => uint256) gameIdIndexMap; // client-side gameId lobby lookup map.
+    mapping(uint256 => uint256) private gameIdIndexMap; // client-side gameId lobby lookup map.
 
     struct Lobby {
         uint256 gameId;
@@ -24,6 +24,8 @@ contract BoardCrypetition {
         server = _server;
         totalCollectedFees += msg.value;
         feePercent = _initialFee;
+
+        lobbies.push(); // 0th element is going to be empty, using 0 index to denote absence elsewhere.
     }
 
     function getNextGameIndex() external view returns(uint256) {
@@ -34,13 +36,17 @@ contract BoardCrypetition {
         feePercent = _fee;
     }
 
-//    function findGameLobby(uint256 _gameId)
+    function setServerAddress(address _server) external onlyOwner {
+        server = _server;
+    }
 
-//    function getQuadruple() external pure returns(string memory, uint8, address, address) {
-//        address player1 = address(0x3585C484fd0e9748Acfe3f10d493847Ad64A8D5b);
-//        address player2 = address(0x3585C484fd0e9748Acfe3f10d493847Ad64A8D5b);
-//        return ("test", 1, player1, player2);
-//    }
+    // Returns an unpacked representation
+    function findGameLobby(uint256 _gameId) external view returns(uint256, uint256, address, address, uint8) {
+        uint256 lobbyIndex = gameIdIndexMap[_gameId];
+        require(lobbyIndex != 0, "No lobby exists with provided game ID");
+        Lobby memory lobby = lobbies[lobbyIndex];
+        return (lobby.gameId, lobby.winnersPot, lobby.player1, lobby.player2, lobby.gameState);
+    }
 
     // Leaving the option to get rid of the contract if I want to change things and redeploy a better version later.
     function retireContract() external onlyOwner{
@@ -66,7 +72,7 @@ contract BoardCrypetition {
     }
 
     modifier hasPercentInput(uint8 _input) {
-        require(_input >= 0 && _input <= 100, "input is not a valid percentage int");
+        require(_input >= 0 && _input <= 100, "Input is not a valid percentage int");
         _;
     }
 }

@@ -17,9 +17,7 @@ fun Route.game(client: EthereumClient) {
         lobby?.let {
             outgoing.send(
                 Frame.Text(
-                    "Joined lobby: ${it.gameId} [Game: ${
-                        GameState.values().find { state -> state.stateCode == it.gameState}
-                    }]"
+                    "Joined lobby: ${lobby.gameId} [Game: ${lobby.gameState}]"
                 )
             )
 

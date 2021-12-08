@@ -7,4 +7,8 @@ enum class GameState(val stateCode: Int) {
     COMPLETED(3), // game finished and ready for payout
     PAID_OUT(4), // game finished and payout has been sent
     ERRORED(5); // an error occurred that prevents the game from completing
+
+    companion object {
+        fun fromStateCode(code: Int): GameState = values().find { it.stateCode == code } ?: NOT_INITIALIZED
+    }
 }

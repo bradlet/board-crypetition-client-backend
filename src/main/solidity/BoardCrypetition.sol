@@ -5,7 +5,7 @@ pragma solidity >=0.8.0 <= 0.8.10;
 // @notice This essentially an escrow smart contract designed for efficient 'transaction' lookup. Focused on games.
 contract BoardCrypetition {
     // constants
-    uint256 private constant recentLobbiesToShow = 100;
+    uint8 private constant recentLobbiesToShow = 100;
 
     // contract storage variables
     address owner;
@@ -14,11 +14,11 @@ contract BoardCrypetition {
     uint8 public feePercent;
 
     Lobby[] lobbies;
-    mapping(address => uint256) currentGameMap; // An address can only be in one game at a time. 0 means no game active
-    mapping(uint256 => uint256) private gameIdIndexMap; // client-side gameId lobby lookup map.
+    mapping(address => uint128) currentGameMap; // An address can only be in one game at a time. 0 means no game active
+    mapping(uint128 => uint128) private gameIdIndexMap; // client-side gameId lobby lookup map.
 
     struct Lobby {
-        uint256 gameId;
+        uint128 gameId;
         uint256 winnersPot; // amount to pay to winner in wei
         address payable player1;
         address payable player2;
@@ -45,11 +45,11 @@ contract BoardCrypetition {
 
     // Returns all lobbies that are in an INITIALIZED state (code: 1), these are games awaiting a second player.
     // Capping amount to show for simplicity -- games can become hard to discover if they are old, as a result.
-    function getRecentOpenLobbies() external view returns(uint256[recentLobbiesToShow] memory) {
-        uint256[recentLobbiesToShow] memory openLobbies;
-        uint256 currentOpenLobbyCount = 0;
+    function getRecentOpenLobbies() external view returns(uint128[recentLobbiesToShow] memory) {
+        uint128[recentLobbiesToShow] memory openLobbies;
+        uint8 currentOpenLobbyCount = 0;
         // Loop (most recent first) through all lobbies, or until 'recentLobbiesToShow' open lobbies have been found.
-        for (uint256 i = lobbies.length-1; i >= 0 && currentOpenLobbyCount < recentLobbiesToShow; i--) {
+        for (uint128 i = uint128(lobbies.length-1); i >= 0 && currentOpenLobbyCount < recentLobbiesToShow; i--) {
             Lobby memory lobby = lobbies[i];
             // if game state == INITIALIZED add this lobby's gameId to openLobbies
             if (lobby.gameState == 1) {
@@ -61,13 +61,13 @@ contract BoardCrypetition {
     }
 
     // Returns an unpacked representation
-    function findGameLobby(uint256 _gameId) external view returns(uint256, uint256, address, address, uint8) {
+    function findGameLobby(uint128 _gameId) external view returns(uint128, uint256, address, address, uint8) {
         Lobby memory lobby = lobbies[lookupGameIndex(_gameId)];
         return (lobby.gameId, lobby.winnersPot, lobby.player1, lobby.player2, lobby.gameState);
     }
 
     // Redundant with findGameLobby, but just a bit cleaner to interact with.
-    function lookupGameState(uint256 _gameId) external view returns(uint8) {
+    function lookupGameState(uint128 _gameId) external view returns(uint8) {
         return lobbies[lookupGameIndex(_gameId)].gameState;
     }
 
@@ -82,13 +82,13 @@ contract BoardCrypetition {
 
     // --- private helper functions here ---
 
-    function getNextGameIndex() private view returns(uint256) {
-        return lobbies.length;
+    function getNextGameIndex() private view returns(uint128) {
+        return uint128(lobbies.length);
     }
 
     // Basically tags require exists check on top of gameIdIndexMap reads
-    function lookupGameIndex(uint256 _gameId) private view returns(uint256) {
-        uint256 lobbyIndex = gameIdIndexMap[_gameId];
+    function lookupGameIndex(uint128 _gameId) private view returns(uint128) {
+        uint128 lobbyIndex = gameIdIndexMap[_gameId];
         require(lobbyIndex != 0, "No lobby exists with provided game ID");
         return lobbyIndex ;
     }

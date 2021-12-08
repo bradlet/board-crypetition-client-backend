@@ -10,10 +10,9 @@ import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.gson.*
 import io.ktor.routing.*
-import okhttp3.Authenticator
 import okhttp3.OkHttpClient
+import org.web3j.boardcrypetition.BoardCrypetition
 import org.web3j.crypto.Credentials
-import org.web3j.mycontract.MyContract
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.http.HttpService
 import org.web3j.tx.gas.DefaultGasProvider
@@ -33,7 +32,7 @@ fun main() {
             .build()
     )
     val ethClient = EthereumClient(
-        contract = MyContract.load(
+        contract = BoardCrypetition.load(
             "",
             Web3j.build(ethHttpClient),
             Credentials.create("0x01"),

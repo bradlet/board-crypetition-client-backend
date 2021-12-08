@@ -8,10 +8,10 @@ import java.math.BigInteger
  * Used to convey information on game state and membership to clients
  */
 data class GameLobby(
-    val gameId: BigInteger,
-    val winnersPot: BigInteger,
+    val gameId: BigInteger, // uint128
+    val winnersPot: BigInteger, // uint256 -- wei
     val players: Pair<Address, Address?>, // can't exist w/o at least a 1st player
-    val gameState: GameState
+    val gameState: GameState // state code in uint8
 ) {
     companion object {
         fun of(web3jTuple: SolLobbyTuple): GameLobby {

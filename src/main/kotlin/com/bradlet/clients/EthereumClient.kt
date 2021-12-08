@@ -33,16 +33,6 @@ class EthereumClient(
     }
 }
 
-private fun BoardCrypetition.startGame(
-    opponent: Address,
-    gameId: BigInteger
-){
-    // 1. Receive two addresses for players.
-    // 2. Create game ID --> game ID == session ID that will be used to join WebSocket
-    //  game session.
-    // 3. start game and echo game Id for verification
-}
-
 // Returns:
 //  | true for games that, after call to finalizeGame, return COMPLETED from
 //  |   checkGameState as expected.

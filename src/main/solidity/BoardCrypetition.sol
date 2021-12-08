@@ -5,8 +5,9 @@ pragma solidity >=0.8.0 <= 0.8.10;
 // @notice This essentially an escrow smart contract designed for efficient 'transaction' lookup. Focused on games.
 contract BoardCrypetition {
     // constants
-    uint8 private constant recentLobbiesToShow = 100;
     enum GameState { NOT_INITIALIZED, INITIALIZED, READY, COMPLETED, PAID_OUT, ERRORED }
+    uint8 private constant recentLobbiesToShow = 100;
+    uint8 private constant INITIALIZED = uint8(GameState.INITIALIZED);
 
     // contract storage variables
     address owner;
@@ -17,6 +18,11 @@ contract BoardCrypetition {
     Lobby[] lobbies;
     mapping(address => uint128) currentGameMap; // address to their current gameId -- gameId 0 == none active.
     mapping(uint128 => uint128) private gameIdIndexMap; // client-side gameId lobby lookup map.
+
+    // Sent when a player joins a game successfully and the lobby's state is updated to READY.
+    event GameReady(
+        uint128 indexed gameId
+    );
 
     struct Lobby {
         uint128 gameId;
@@ -45,16 +51,26 @@ contract BoardCrypetition {
     }
 
     // Called by frontend clients to create an INITIALIZED game lobby, ready for another player to join.
-    function createGame(uint128 _gameId) external payable {
+    function createGame(uint128 _gameId) external payable onlyOneConcurrentGame {
         require(msg.value >= .001 ether, "cannot create game with wager less than .001 ether");
-        require(currentGameMap[msg.sender] == 0, "sender is already in a game");
         require(gameIdIndexMap[_gameId] == 0, "provided gameId already exists");
 
         // Initialize new game lobby with player2 as zero-address. In this app, that equates to null.
-        Lobby memory newGameLobby = Lobby(_gameId, msg.value, payable(msg.sender), payable(0), uint8(GameState.INITIALIZED));
+        Lobby memory newGameLobby = Lobby(_gameId, msg.value, payable(msg.sender), payable(0), INITIALIZED);
         currentGameMap[msg.sender] = _gameId;
         gameIdIndexMap[_gameId] = getNextGameIndex();
         lobbies.push(newGameLobby);
+    }
+
+    function joinGame(uint128 _gameId) external payable onlyOneConcurrentGame {
+        uint128 gameIndex = lookupGameIndex(_gameId); // lookupGameIndex ensures game exists
+        Lobby memory lobby = lobbies[gameIndex];
+        require(lobby.gameState == INITIALIZED, "game with provided ID cannot be joined.");
+        require(msg.value == lobby.wager, "must match the lobby's wager when joining a game.");
+
+        lobby.player2 = payable(msg.sender);
+        lobby.gameState = uint8(GameState.READY);
+        emit GameReady(_gameId);
     }
 
     // Returns all lobbies that are in an INITIALIZED state (code: 1), these are games awaiting a second player.
@@ -66,7 +82,7 @@ contract BoardCrypetition {
         for (uint128 i = uint128(lobbies.length-1); i >= 0 && currentOpenLobbyCount < recentLobbiesToShow; i--) {
             Lobby memory lobby = lobbies[i];
             // if game state == INITIALIZED add this lobby's gameId to openLobbies
-            if (lobby.gameState == uint8(GameState.INITIALIZED)) {
+            if (lobby.gameState == INITIALIZED) {
                 openLobbies[currentOpenLobbyCount] = lobby.gameId;
                 currentOpenLobbyCount += 1;
             }
@@ -118,6 +134,11 @@ contract BoardCrypetition {
 
     modifier onlyServer {
         require(msg.sender == server, "Only the game server can call this function.");
+        _;
+    }
+
+    modifier onlyOneConcurrentGame {
+        require(currentGameMap[msg.sender] == 0, "sender is already in a game");
         _;
     }
 

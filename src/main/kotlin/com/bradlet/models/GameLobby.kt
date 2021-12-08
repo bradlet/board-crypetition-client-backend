@@ -9,16 +9,16 @@ import java.math.BigInteger
  */
 data class GameLobby(
     val gameId: BigInteger, // uint128
-    val winnersPot: BigInteger, // uint256 -- wei
+    val wager: BigInteger, // uint256 -- wei
     val players: Pair<Address, Address?>, // can't exist w/o at least a 1st player
     val gameState: GameState // state code in uint8
 ) {
     companion object {
         fun of(web3jTuple: SolLobbyTuple): GameLobby {
-            val (gameId, winnersPot, player1, player2, gameState) = web3jTuple
+            val (gameId, wager, player1, player2, gameState) = web3jTuple
             return GameLobby(
                 gameId = gameId,
-                winnersPot = winnersPot,
+                wager = wager,
                 gameState = GameState.fromStateCode(gameState.toInt()),
                 players = Address(player1) to Address(player2)
             )

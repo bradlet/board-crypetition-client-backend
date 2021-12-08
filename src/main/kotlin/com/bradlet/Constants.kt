@@ -14,5 +14,5 @@ val TEMPORARY_GAME_LOBBY_SOL = Tuple5(
 )
 val TEMPORARY_GAME_LOBBY = GameLobby.of(TEMPORARY_GAME_LOBBY_SOL)
 
-// gameId, winnersPot, player1, player2, gameState
+// gameId, wager, player1, player2, gameState
 typealias SolLobbyTuple = Tuple5<BigInteger, BigInteger, String, String, BigInteger>

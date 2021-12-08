@@ -6,6 +6,7 @@ pragma solidity >=0.8.0 <= 0.8.10;
 contract BoardCrypetition {
     // constants
     uint8 private constant recentLobbiesToShow = 100;
+    enum GameState { NOT_INITIALIZED, INITIALIZED, READY, COMPLETED, PAID_OUT, ERRORED }
 
     // contract storage variables
     address owner;
@@ -14,12 +15,12 @@ contract BoardCrypetition {
     uint8 public feePercent;
 
     Lobby[] lobbies;
-    mapping(address => uint128) currentGameMap; // An address can only be in one game at a time. 0 means no game active
+    mapping(address => uint128) currentGameMap; // address to their current gameId -- gameId 0 == none active.
     mapping(uint128 => uint128) private gameIdIndexMap; // client-side gameId lobby lookup map.
 
     struct Lobby {
         uint128 gameId;
-        uint256 winnersPot; // amount to pay to winner in wei
+        uint256 wager; // in wei
         address payable player1;
         address payable player2;
         uint8 gameState; // uint8 state codes -- src/main/kotlin/com/bradlet/models/GameState.kt for more info.
@@ -43,6 +44,19 @@ contract BoardCrypetition {
         server = _server;
     }
 
+    // Called by frontend clients to create an INITIALIZED game lobby, ready for another player to join.
+    function createGame(uint128 _gameId) external payable {
+        require(msg.value >= .001 ether, "cannot create game with wager less than .001 ether");
+        require(currentGameMap[msg.sender] == 0, "sender is already in a game");
+        require(gameIdIndexMap[_gameId] == 0, "provided gameId already exists");
+
+        // Initialize new game lobby with player2 as zero-address. In this app, that equates to null.
+        Lobby memory newGameLobby = Lobby(_gameId, msg.value, payable(msg.sender), payable(0), uint8(GameState.INITIALIZED));
+        currentGameMap[msg.sender] = _gameId;
+        gameIdIndexMap[_gameId] = getNextGameIndex();
+        lobbies.push(newGameLobby);
+    }
+
     // Returns all lobbies that are in an INITIALIZED state (code: 1), these are games awaiting a second player.
     // Capping amount to show for simplicity -- games can become hard to discover if they are old, as a result.
     function getRecentOpenLobbies() external view returns(uint128[recentLobbiesToShow] memory) {
@@ -52,7 +66,7 @@ contract BoardCrypetition {
         for (uint128 i = uint128(lobbies.length-1); i >= 0 && currentOpenLobbyCount < recentLobbiesToShow; i--) {
             Lobby memory lobby = lobbies[i];
             // if game state == INITIALIZED add this lobby's gameId to openLobbies
-            if (lobby.gameState == 1) {
+            if (lobby.gameState == uint8(GameState.INITIALIZED)) {
                 openLobbies[currentOpenLobbyCount] = lobby.gameId;
                 currentOpenLobbyCount += 1;
             }
@@ -63,7 +77,7 @@ contract BoardCrypetition {
     // Returns an unpacked representation
     function findGameLobby(uint128 _gameId) external view returns(uint128, uint256, address, address, uint8) {
         Lobby memory lobby = lobbies[lookupGameIndex(_gameId)];
-        return (lobby.gameId, lobby.winnersPot, lobby.player1, lobby.player2, lobby.gameState);
+        return (lobby.gameId, lobby.wager, lobby.player1, lobby.player2, lobby.gameState);
     }
 
     // Redundant with findGameLobby, but just a bit cleaner to interact with.

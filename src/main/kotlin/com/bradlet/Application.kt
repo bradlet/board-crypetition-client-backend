@@ -10,6 +10,7 @@ import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.gson.*
 import io.ktor.routing.*
+import okhttp3.Authenticator
 import okhttp3.OkHttpClient
 import org.web3j.crypto.Credentials
 import org.web3j.mycontract.MyContract
@@ -19,7 +20,18 @@ import org.web3j.tx.gas.DefaultGasProvider
 
 // Main entry point into our application
 fun main() {
-    val ethHttpClient = HttpService(OkHttpClient())
+    val ethHttpClient = HttpService(
+        "https://ropsten.infura.io/v3/70ed7300192e4a9c86154a995ef9e925",
+        OkHttpClient.Builder()
+            // All calls via this client need authorization b/c I use Infura
+            .addInterceptor { chain ->
+                val authenticatedRequest = chain.request().newBuilder().addHeader(
+                    "Authorization", "secret here eventually"
+                ).build()
+                chain.proceed(authenticatedRequest)
+            }
+            .build()
+    )
     val ethClient = EthereumClient(
         contract = MyContract.load(
             "",

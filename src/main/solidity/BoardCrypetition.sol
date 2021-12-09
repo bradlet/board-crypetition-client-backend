@@ -34,13 +34,13 @@ contract BoardCrypetition {
         uint8 gameState; // uint8 state codes -- src/main/kotlin/com/bradlet/models/GameState.kt for more info.
     }
 
-    constructor (address _server, uint8 _initialFee) payable hasPercentInput(_initialFee) {
+    constructor (address _server, uint8 _initialFee, uint8 _initialRecentLobbyDepth) payable hasPercentInput(_initialFee) {
         // Initial values
         owner = msg.sender;
         server = _server;
         totalCollectedFees += msg.value;
         feePercent = _initialFee;
-        recentLobbyDepth = 10;
+        recentLobbyDepth = _initialRecentLobbyDepth;
 
         lobbies.push(); // 0th element is going to be empty, using 0 index to denote absence elsewhere.
     }
@@ -87,12 +87,13 @@ contract BoardCrypetition {
         uint128[] memory openLobbies = new uint128[](recentLobbyDepth);
         uint8 currentOpenLobbyCount = 0;
         // Loop (most recent first) through all lobbies, or until `recentLobbyDepth` open lobbies have been found.
-        for (uint128 i = uint128(lobbies.length-1); i >= 0 && currentOpenLobbyCount < recentLobbyDepth; i--) {
-            Lobby storage lobby = lobbies[i];
+        // Ignores 0th element because it is initialized in the constructor as an empty Lobby.
+        for (uint i = lobbies.length-1; i > 0 && currentOpenLobbyCount < recentLobbyDepth; i--) {
+            uint8 lobbyState = lobbies[i].gameState;
+            uint128 lobbyId = lobbies[i].gameId;
             // if game state == INITIALIZED add this lobby's gameId to openLobbies
-            if (lobby.gameState == INITIALIZED) {
-                openLobbies[currentOpenLobbyCount] = lobby.gameId;
-                currentOpenLobbyCount += 1;
+            if (lobbyState == INITIALIZED) {
+                openLobbies[currentOpenLobbyCount++] = lobbyId;
             }
         }
         return openLobbies;

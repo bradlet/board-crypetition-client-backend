@@ -7,7 +7,7 @@ pragma solidity >=0.8.0 <= 0.8.10;
 // @notice This essentially an escrow smart contract designed for efficient 'transaction' lookup. Focused on games.
 contract BoardCrypetition {
     // constants
-    enum GameState { NOT_INITIALIZED, INITIALIZED, READY, COMPLETED, PAID_OUT, ERRORED }
+    enum GameState { NOT_INITIALIZED, INITIALIZED, READY, COMPLETED }
     uint8 private constant INITIALIZED = uint8(GameState.INITIALIZED);
 
     // contract storage variables
@@ -69,6 +69,8 @@ contract BoardCrypetition {
         lobbies.push(newGameLobby);
     }
 
+    // Called by frontend clients to join an INITIALIZED game, and informing consumers of GameReady (the server)
+    // that the game may begin.
     function joinGame(uint128 _gameId) external payable onlyOneConcurrentGame {
         uint128 gameIndex = lookupGameIndex(_gameId); // lookupGameIndex ensures game exists
         Lobby storage lobby = lobbies[gameIndex];
@@ -79,6 +81,26 @@ contract BoardCrypetition {
         lobby.player2 = payable(msg.sender);
         lobby.gameState = uint8(GameState.READY);
         emit GameReady(_gameId);
+    }
+
+    // Called only by the game server. Updates game state, collects fees and sends out payment to winner.
+    function completeGame(uint128 _gameId, bool _player1Won) external onlyServer {
+        uint128 gameIndex = lookupGameIndex(_gameId);
+        Lobby storage lobby = lobbies[gameIndex];
+        require(lobby.gameState == uint8(GameState.READY), "Only READY lobbies can be completed.");
+
+        // Explicitly point out winner player then collect fees and send payout of remainder to winner.
+        address payable winningPlayer = _player1Won ? lobby.player1 : lobby.player2;
+        uint256 lobbyFunds = lobby.wager * 2; // 2 players paid the same wager to enter the lobby
+        uint256 feesCollected = (feePercent / 100) * lobbyFunds;
+
+        // Send the remainder of the winner's pot, after fee collection.
+        assert(winningPlayer.send(lobbyFunds - feesCollected) == true);
+
+        // Remove players from the game
+        currentGameMap[lobby.player1] = 0;
+        currentGameMap[lobby.player2] = 0;
+        lobby.gameState = uint8(GameState.COMPLETED);
     }
 
     // Returns all lobbies that are in an INITIALIZED state (code: 1), these are games awaiting a second player.

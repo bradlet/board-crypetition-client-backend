@@ -8,7 +8,6 @@ pragma solidity >=0.8.0 <= 0.8.10;
 contract BoardCrypetition {
     // constants
     enum GameState { NOT_INITIALIZED, INITIALIZED, READY, COMPLETED, PAID_OUT, ERRORED }
-    uint8 private constant recentLobbiesToShow = 100;
     uint8 private constant INITIALIZED = uint8(GameState.INITIALIZED);
 
     // contract storage variables
@@ -16,6 +15,7 @@ contract BoardCrypetition {
     address server;
     uint256 public totalCollectedFees;
     uint8 public feePercent;
+    uint8 recentLobbyDepth;
 
     Lobby[] lobbies;
     mapping(address => uint128) currentGameMap; // address to their current gameId -- gameId 0 == none active.
@@ -40,6 +40,7 @@ contract BoardCrypetition {
         server = _server;
         totalCollectedFees += msg.value;
         feePercent = _initialFee;
+        recentLobbyDepth = 10;
 
         lobbies.push(); // 0th element is going to be empty, using 0 index to denote absence elsewhere.
     }
@@ -50,6 +51,10 @@ contract BoardCrypetition {
 
     function setServerAddress(address _server) external onlyOwner {
         server = _server;
+    }
+
+    function setRecentLobbyDepth(uint8 _depth) external onlyServer {
+        recentLobbyDepth = _depth;
     }
 
     // Called by frontend clients to create an INITIALIZED game lobby, ready for another player to join.
@@ -78,11 +83,11 @@ contract BoardCrypetition {
 
     // Returns all lobbies that are in an INITIALIZED state (code: 1), these are games awaiting a second player.
     // Capping amount to show for simplicity -- games can become hard to discover if they are old, as a result.
-    function getRecentOpenLobbies() external view returns(uint128[recentLobbiesToShow] memory) {
-        uint128[recentLobbiesToShow] memory openLobbies;
+    function getRecentOpenLobbies() external view returns(uint128[recentLobbyDepth] memory) {
+        uint128[] memory openLobbies = new uint128[](recentLobbyDepth);
         uint8 currentOpenLobbyCount = 0;
-        // Loop (most recent first) through all lobbies, or until 'recentLobbiesToShow' open lobbies have been found.
-        for (uint128 i = uint128(lobbies.length-1); i >= 0 && currentOpenLobbyCount < recentLobbiesToShow; i--) {
+        // Loop (most recent first) through all lobbies, or until `recentLobbyDepth` open lobbies have been found.
+        for (uint128 i = uint128(lobbies.length-1); i >= 0 && currentOpenLobbyCount < recentLobbyDepth; i--) {
             Lobby memory lobby = lobbies[i];
             // if game state == INITIALIZED add this lobby's gameId to openLobbies
             if (lobby.gameState == INITIALIZED) {

@@ -71,7 +71,7 @@ contract BoardCrypetition {
 
     function joinGame(uint128 _gameId) external payable onlyOneConcurrentGame {
         uint128 gameIndex = lookupGameIndex(_gameId); // lookupGameIndex ensures game exists
-        Lobby memory lobby = lobbies[gameIndex];
+        Lobby storage lobby = lobbies[gameIndex];
         require(lobby.gameState == INITIALIZED, "game with provided ID cannot be joined.");
         require(msg.value == lobby.wager, "must match the lobby's wager when joining a game.");
 
@@ -88,7 +88,7 @@ contract BoardCrypetition {
         uint8 currentOpenLobbyCount = 0;
         // Loop (most recent first) through all lobbies, or until `recentLobbyDepth` open lobbies have been found.
         for (uint128 i = uint128(lobbies.length-1); i >= 0 && currentOpenLobbyCount < recentLobbyDepth; i--) {
-            Lobby memory lobby = lobbies[i];
+            Lobby storage lobby = lobbies[i];
             // if game state == INITIALIZED add this lobby's gameId to openLobbies
             if (lobby.gameState == INITIALIZED) {
                 openLobbies[currentOpenLobbyCount] = lobby.gameId;

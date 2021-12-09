@@ -83,7 +83,7 @@ contract BoardCrypetition {
 
     // Returns all lobbies that are in an INITIALIZED state (code: 1), these are games awaiting a second player.
     // Capping amount to show for simplicity -- games can become hard to discover if they are old, as a result.
-    function getRecentOpenLobbies() external view returns(uint128[recentLobbyDepth] memory) {
+    function getRecentOpenLobbies() external view returns(uint128[] memory) {
         uint128[] memory openLobbies = new uint128[](recentLobbyDepth);
         uint8 currentOpenLobbyCount = 0;
         // Loop (most recent first) through all lobbies, or until `recentLobbyDepth` open lobbies have been found.

@@ -8,12 +8,14 @@ import com.google.gson.Gson
 import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*
 import io.ktor.websocket.*
+import java.math.BigInteger
 
 fun Route.game(client: EthereumClient) {
     // websocket session for the main game's streaming communication
     webSocket("/game/{gameId}") {
-        val lobby: GameLobby = call.parameters["gameId"]?.let {
-            client.findGameLobby(it.toUint128())
+        val lobbyId: BigInteger? = call.parameters["gameId"]?.toUint128()
+        val lobby: GameLobby = lobbyId?.let {
+            client.findGameLobby(it)
         } ?: throw IllegalStateException("gameId must be provided.")
 
         outgoing.send(
@@ -37,7 +39,7 @@ fun Route.game(client: EthereumClient) {
                     declaration?.let {
                         outgoing.send(Frame.Text("Player ${it.playerAddress} has declared victory."))
                         try {
-                            client.completeGame(lobby.gameId, lobby.players.first.value == it.playerAddress )
+                            client.completeGame(lobbyId, lobby.players.first.value == it.playerAddress )
                         } catch (e: IllegalStateException) {
                             outgoing.send(Frame.Text("Failed to confirm victory."))
                         }

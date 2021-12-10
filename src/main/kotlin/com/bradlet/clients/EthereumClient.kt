@@ -16,7 +16,7 @@ class EthereumClient(
                 "Can't complete game with state: $gameState"
             )
 
-        contract.completeGame(gameId, player1Won)
+        contract.completeGame(gameId, player1Won).send()
     }
 
     suspend fun getRecentOpenLobbies(): List<BigInteger> {

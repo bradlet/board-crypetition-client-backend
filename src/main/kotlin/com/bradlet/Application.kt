@@ -20,7 +20,6 @@ import org.web3j.tx.gas.StaticGasProvider
 import java.math.BigInteger
 
 const val CONTRACT_ADDR = "0x15311F4DE2e49482B95bf939a33727c4Be95ee88"
-const val SERVER_ADDR = "0x3585C484fd0e9748Acfe3f10d493847Ad64A8D5b"
 
 // Main entry point into our application
 fun main() {

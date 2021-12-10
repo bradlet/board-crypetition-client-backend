@@ -70,6 +70,8 @@ internal suspend fun DefaultClientWebSocketSession.sendUserInput(address: String
                 if (msg.contains("won", ignoreCase = true) || msg.contains("victory", ignoreCase = true)) {
                     val declaration = StateChangeDeclaration(address, Declaration.WON)
                     send(Gson().toJson(declaration))
+                } else {
+                    send(msg)
                 }
             }
         } catch (e: Exception) {

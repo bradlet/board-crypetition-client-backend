@@ -27,7 +27,12 @@ import java.math.BigInteger
 class ApplicationTest {
 
     private val contractMock = mockk<BoardCrypetition>(relaxed = true)
-    private val ethClient = EthereumClient(contractMock)
+    private val ethClient = EthereumClient(
+        contractMock,
+        mockk(relaxed = true),
+        mockk(relaxed = true),
+        mockk(relaxed = true)
+    )
 
     @BeforeEach
     fun setupTests() {

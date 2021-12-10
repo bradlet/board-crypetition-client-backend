@@ -26,6 +26,7 @@ fun Route.game(client: EthereumClient) {
             when (frame) {
                 is Frame.Text -> {
                     val text = frame.readText()
+                    outgoing.send(Frame.Text("Echo: $text"))
                     val declaration: StateChangeDeclaration? = try {
                         Gson().fromJson(text, StateChangeDeclaration::class.java)
                     } catch (e: Exception) {
@@ -39,9 +40,13 @@ fun Route.game(client: EthereumClient) {
                     declaration?.let {
                         outgoing.send(Frame.Text("Player ${it.playerAddress} has declared victory."))
                         try {
-                            client.completeGame(lobbyId, lobby.players.first.value == it.playerAddress )
+                            val response = client
+                                .completeGame(lobbyId, lobby.players.first.value == it.playerAddress )
+                            outgoing.send(Frame.Text("Victory declaration transaction hash: $response"))
                         } catch (e: IllegalStateException) {
                             outgoing.send(Frame.Text("Failed to confirm victory: ${e.message}"))
+                        } catch (e: Exception) {
+                            outgoing.send(Frame.Text("Exception while sending declaration: ${e.message}"))
                         }
                     }
                     if (text.contains("bye", ignoreCase = true) || text.contains("exit", ignoreCase = true)) {
@@ -50,7 +55,7 @@ fun Route.game(client: EthereumClient) {
                         )
                     }
                 }
-                else -> {}
+                else -> {outgoing.send(Frame.Text("Non text frame received"))}
             }
         }
     }

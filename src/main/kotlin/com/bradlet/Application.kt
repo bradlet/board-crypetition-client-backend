@@ -19,13 +19,18 @@ import org.web3j.tx.gas.DefaultGasProvider
 
 // Main entry point into our application
 fun main() {
+    // For now, going to enter secrets locally via environment variables.
+    // TODO: Adapt to use secrets over winter break
+    val infuraKey: String = System.getenv("INFURA_KEY")
+    val myTestWalletPrivateKey: String = System.getenv("WALLET_KEY")
+
     val ethHttpClient = HttpService(
         "https://ropsten.infura.io/v3/70ed7300192e4a9c86154a995ef9e925",
         OkHttpClient.Builder()
             // All calls via this client need authorization b/c I use Infura
             .addInterceptor { chain ->
                 val authenticatedRequest = chain.request().newBuilder().addHeader(
-                    "Authorization", "secret here eventually"
+                    "Authorization", infuraKey
                 ).build()
                 chain.proceed(authenticatedRequest)
             }
@@ -35,14 +40,14 @@ fun main() {
         contract = BoardCrypetition.load(
             "0x15311F4DE2e49482B95bf939a33727c4Be95ee88",
             Web3j.build(ethHttpClient),
-            Credentials.create("0x01"),
+            Credentials.create(myTestWalletPrivateKey),
             DefaultGasProvider()
         )
     )
 
     val mainApp = applicationEngineEnvironment {
         module {
-            mainApp(ethClient)
+            mainApp(ethClient, httpsRedirect = false)
         }
 
         connector {
@@ -55,11 +60,11 @@ fun main() {
 }
 
 // Configure plugins and API routing
-fun Application.mainApp(ethClient: EthereumClient) {
+fun Application.mainApp(ethClient: EthereumClient, httpsRedirect: Boolean = true) {
     /**
      * Configure web server plugins
      */
-    configureHTTP()
+    configureHTTP(redirect = httpsRedirect)
     configureMonitoring()
     configureSockets()
     // Setup GSON json serialization / deserialization

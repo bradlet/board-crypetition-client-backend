@@ -35,14 +35,14 @@ class ApplicationTest {
 
         // Used in Game route
         every { contractMock.findGameLobby(any()) } returns
-                mockRemoteFunctionCall<SolLobbyTuple>(TEMPORARY_GAME_LOBBY_SOL)
+                mockRemoteFunctionCall<SolLobbyTuple>(EXAMPLE_GAME_LOBBY_SOL)
         every { contractMock.lookupGameState(any()) } returns
                 mockRemoteFunctionCall<BigInteger>(
                     BigInteger.valueOf(GameState.READY.stateCode.toLong())
                 )
         // Used in BasePath route
         every { contractMock.recentOpenLobbies } returns
-                mockRemoteFunctionCall<List<*>>(TEMPORARY_EXAMPLE_LOBBY_LIST)
+                mockRemoteFunctionCall<List<*>>(EXAMPLE_LOBBY_LIST)
     }
 
     @AfterEach
@@ -69,7 +69,7 @@ class ApplicationTest {
         }) {
             assertEquals(HttpStatusCode.OK, response.status())
             val lobbies = Gson().fromJson(response.content, Array<BigInteger>::class.java)
-            assertArrayEquals(TEMPORARY_EXAMPLE_LOBBY_LIST.toTypedArray(), lobbies)
+            assertArrayEquals(EXAMPLE_LOBBY_LIST.toTypedArray(), lobbies)
         }
     }
 
@@ -81,7 +81,7 @@ class ApplicationTest {
         ) { incoming, outgoing ->
             // Test greeting
             val greeting = (incoming.receive() as Frame.Text).readText()
-            assert(greeting.contains("Joined lobby: ${TEMPORARY_GAME_LOBBY.gameId}"))
+            assert(greeting.contains("Joined lobby: ${EXAMPLE_GAME_LOBBY.gameId}"))
         }
     }
 

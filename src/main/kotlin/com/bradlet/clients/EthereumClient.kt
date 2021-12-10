@@ -12,11 +12,13 @@ class EthereumClient(
     suspend fun completeGame(gameId: BigInteger, player1Won: Boolean) {
         val gameState = getGameState(gameId)
         if (gameState != GameState.READY)
-            throw IllegalStateException(
-                "Can't complete game with state: $gameState"
-            )
+            throw IllegalStateException("Can't complete game with state <$gameState>")
 
-        contract.completeGame(gameId, player1Won).send()
+        try {
+            contract.completeGame(gameId, player1Won).send()
+        } catch (e: Exception) {
+            throw IllegalStateException("Complete game transaction returned error. ${e.message}")
+        }
     }
 
     suspend fun getRecentOpenLobbies(): List<BigInteger> {

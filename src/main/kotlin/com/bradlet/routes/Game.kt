@@ -41,7 +41,7 @@ fun Route.game(client: EthereumClient) {
                         try {
                             client.completeGame(lobbyId, lobby.players.first.value == it.playerAddress )
                         } catch (e: IllegalStateException) {
-                            outgoing.send(Frame.Text("Failed to confirm victory."))
+                            outgoing.send(Frame.Text("Failed to confirm victory: ${e.message}"))
                         }
                     }
                     if (text.contains("bye", ignoreCase = true) || text.contains("exit", ignoreCase = true)) {

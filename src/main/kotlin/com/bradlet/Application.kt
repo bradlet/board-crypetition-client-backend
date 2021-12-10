@@ -19,7 +19,7 @@ import org.web3j.tx.RawTransactionManager
 import org.web3j.tx.gas.StaticGasProvider
 import java.math.BigInteger
 
-const val CONTRACT_ADDR = "0x15311F4DE2e49482B95bf939a33727c4Be95ee88"
+const val CONTRACT_ADDR = "0x1AEf7697fF6997e760aC57535b9cCb26c9F18785"
 
 // Main entry point into our application
 fun main() {

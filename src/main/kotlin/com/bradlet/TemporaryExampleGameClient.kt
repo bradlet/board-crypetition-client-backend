@@ -1,5 +1,8 @@
 package com.bradlet
 
+import com.bradlet.models.Declaration
+import com.bradlet.models.StateChangeDeclaration
+import com.google.gson.Gson
 import io.ktor.client.*
 import io.ktor.client.features.websocket.*
 import io.ktor.http.*
@@ -58,15 +61,17 @@ internal suspend fun DefaultClientWebSocketSession.sendUserInput(address: String
     do {
         try {
             readLine()?.let { msg ->
-
-            }
-
-            if (msg != null) {
-                send(msg)
-                if (msg == "bye")
+                // Handle exit command
+                if (msg.equals("bye", ignoreCase = true) || msg.equals("exit", ignoreCase = true)) {
+                    send(msg)
                     return
+                }
+                // Only send StateChangeDeclarations
+                if (msg.contains("won", ignoreCase = true) || msg.contains("victory", ignoreCase = true)) {
+                    val declaration = StateChangeDeclaration(address, Declaration.WON)
+                    send(Gson().toJson(declaration))
+                }
             }
-
         } catch (e: Exception) {
             println(e.message)
             stopCommunication = true

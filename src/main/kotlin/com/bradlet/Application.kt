@@ -33,7 +33,7 @@ fun main() {
     )
     val ethClient = EthereumClient(
         contract = BoardCrypetition.load(
-            "",
+            "0x15311F4DE2e49482B95bf939a33727c4Be95ee88",
             Web3j.build(ethHttpClient),
             Credentials.create("0x01"),
             DefaultGasProvider()

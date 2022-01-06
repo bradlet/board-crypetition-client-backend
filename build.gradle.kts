@@ -11,12 +11,21 @@ plugins {
     application
     kotlin("jvm") version "1.6.0"
     id("org.web3j") version "4.8.8"
+    id ("com.google.cloud.tools.jib") version "3.1.4"
 }
 
 group = "com.bradlet"
 version = "0.0.1"
 application {
-    mainClass.set("com.bradlet.ApplicationKt")
+    mainClass.set("com.bradlet.Application")
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs("src")
+        }
+    }
 }
 
 repositories {
@@ -44,6 +53,11 @@ dependencies {
     testImplementation("io.mockk:mockk:$mockkVersion")
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_13
+    targetCompatibility = JavaVersion.VERSION_13
+}
+
 tasks.test {
     useJUnitPlatform()
     testLogging {
@@ -52,5 +66,5 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "13"
 }

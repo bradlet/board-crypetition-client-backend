@@ -34,8 +34,6 @@ fun Route.game(client: EthereumClient) {
                             val response = client
                                 .completeGame(lobbyId, lobby.players.first.value == declaration.playerAddress )
                             outgoing.sendText("Victory declaration transaction hash: $response")
-                        } catch (e: IllegalStateException) {
-                            outgoing.sendText("Failed to confirm victory: ${e.message}")
                         } catch (e: Exception) {
                             outgoing.sendText("Exception while sending declaration: ${e.message}")
                         }

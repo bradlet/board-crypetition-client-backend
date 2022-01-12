@@ -4,6 +4,7 @@ import com.bradlet.clients.EthereumClient
 import com.bradlet.clients.toUint128
 import com.bradlet.models.GameLobby
 import com.bradlet.models.StateChangeDeclaration
+import com.bradlet.sendText
 import com.google.gson.Gson
 import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*
@@ -26,34 +27,23 @@ fun Route.game(client: EthereumClient) {
             when (frame) {
                 is Frame.Text -> {
                     val text = frame.readText()
-                    val declaration: StateChangeDeclaration? = try {
-                        Gson().fromJson(text, StateChangeDeclaration::class.java)
-                    } catch (e: Exception) {
-                        null
-                    }
 
-                    /**
-                     * For first iteration / example server behavior, a connected client can just declare victory.
-                     */
-
-                    declaration?.let {
-                        outgoing.send(Frame.Text("Player ${it.playerAddress} has declared victory."))
+                    receiveStateUpdate(text)?.let { declaration ->
+                        outgoing.sendText("Player ${declaration.playerAddress} has declared victory.")
                         try {
                             val response = client
-                                .completeGame(lobbyId, lobby.players.first.value == it.playerAddress )
-                            outgoing.send(Frame.Text("Victory declaration transaction hash: $response"))
+                                .completeGame(lobbyId, lobby.players.first.value == declaration.playerAddress )
+                            outgoing.sendText("Victory declaration transaction hash: $response")
                         } catch (e: IllegalStateException) {
-                            outgoing.send(Frame.Text("Failed to confirm victory: ${e.message}"))
+                            outgoing.sendText("Failed to confirm victory: ${e.message}")
                         } catch (e: Exception) {
-                            outgoing.send(Frame.Text("Exception while sending declaration: ${e.message}"))
+                            outgoing.sendText("Exception while sending declaration: ${e.message}")
                         }
                     }
 
                     if (text.contains("status", ignoreCase = true)) { // Find game state command
-                        outgoing.send(
-                            Frame.Text(
-                                "Lobby $lobbyId is currently in state: ${client.findGameLobby(lobbyId).gameState}"
-                            )
+                        outgoing.sendText(
+                            "Lobby $lobbyId is currently in state: ${client.findGameLobby(lobbyId).gameState}"
                         )
                     } else if ( // leave game commands
                         text.contains("bye", ignoreCase = true) ||
@@ -62,12 +52,18 @@ fun Route.game(client: EthereumClient) {
                         close(
                             CloseReason(CloseReason.Codes.NORMAL, "Client exited")
                         )
-                    } else outgoing.send(Frame.Text("Echo: $text")) // Echo message sent otherwise.
+                    } else outgoing.sendText("Echo: $text") // Echo message sent otherwise.
 
                 }
-                else -> {outgoing.send(Frame.Text("Non text frame received"))}
+                else -> outgoing.sendText("Non text frame received")
             }
         }
     }
 
+}
+
+private fun receiveStateUpdate(input: String): StateChangeDeclaration? = try {
+    Gson().fromJson(input, StateChangeDeclaration::class.java)
+} catch (e: Exception) {
+    null
 }

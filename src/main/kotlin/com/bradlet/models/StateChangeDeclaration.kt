@@ -7,10 +7,3 @@ data class StateChangeDeclaration(
     val gameState: String, // Will be a string which will represent the board state for any supported game.
     val gameType: SupportedGame
 )
-
-enum class Declaration {
-    CREATE,
-    JOIN,
-    UPDATE,
-    WON;
-}

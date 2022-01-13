@@ -22,4 +22,22 @@ class TikTacToeManagerTests {
             TikTacToeManager.buildGameMatrix(testString)
         }
     }
+
+    @Test
+    fun `pieceDidWin returns true for all valid victory cases`() {
+        val testStrings = listOf(
+            "XXX------",
+            "---XXX---",
+            "------XXX",
+            "X--X--X--",
+            "-X--X--X-",
+            "--X--X--X",
+            "X---X---X",
+            "--X-X-X--"
+        ).map(TikTacToeManager::buildGameMatrix)
+
+        testStrings.forEach { testCase ->
+            assert(TikTacToeManager.pieceDidWin(testCase, TikTacToeManager.xPiece))
+        }
+    }
 }

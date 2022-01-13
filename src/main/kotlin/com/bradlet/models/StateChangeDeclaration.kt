@@ -4,6 +4,6 @@ package com.bradlet.models
 data class StateChangeDeclaration(
     val playerAddress: String,
     val declaration: Declaration,
-    val gameState: String, // Will be a string which will represent the board state for any supported game.
-    val gameType: SupportedGame
+    val gameState: String = "", // Will be a string which will represent the board state for any supported game.
+    val gameType: SupportedGame = SupportedGame.TIK_TAC_TOE
 )

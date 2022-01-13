@@ -1,4 +1,4 @@
-package com.bradlet
+package com.bradlet.helpers
 
 import io.ktor.http.cio.websocket.*
 import kotlinx.coroutines.channels.SendChannel

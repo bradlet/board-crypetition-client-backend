@@ -4,6 +4,7 @@ import com.bradlet.clients.EthereumClient
 import com.bradlet.models.Declaration
 import com.bradlet.models.GameState
 import com.bradlet.models.StateChangeDeclaration
+import com.bradlet.models.SupportedGame
 import com.google.gson.Gson
 import io.ktor.application.*
 import io.ktor.features.*
@@ -103,7 +104,9 @@ class ApplicationTest {
                     Gson().toJson(
                         StateChangeDeclaration(
                             playerAddress = AN_ADDRESS,
-                            declaration = Declaration.WON
+                            declaration = Declaration.WON,
+                            gameState = "123456789",
+                            gameType = SupportedGame.TIK_TAC_TOE
                         )
                     )
                 )

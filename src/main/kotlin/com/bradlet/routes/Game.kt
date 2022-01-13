@@ -4,7 +4,7 @@ import com.bradlet.clients.EthereumClient
 import com.bradlet.clients.toUint128
 import com.bradlet.models.GameLobby
 import com.bradlet.models.StateChangeDeclaration
-import com.bradlet.sendText
+import com.bradlet.helpers.sendText
 import com.google.gson.Gson
 import io.ktor.http.cio.websocket.*
 import io.ktor.routing.*

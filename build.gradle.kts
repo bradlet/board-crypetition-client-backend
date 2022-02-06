@@ -9,9 +9,9 @@ val junitVersion: String by project
 
 plugins {
     application
-    kotlin("jvm") version "1.6.0"
-    id("org.web3j") version "4.8.8"
-    id ("com.google.cloud.tools.jib") version "3.1.4"
+    kotlin("jvm")
+    id("org.web3j")
+    id ("com.google.cloud.tools.jib")
 }
 
 group = "com.bradlet"
